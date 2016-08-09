@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>Pokemon Rater</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+
+  <body>
+  <div id="backdddground" class="grass"></div>
+  <div class="card">
+
+  <div class="upper_left">
+  <h3 id="cp_label"><small>CP</small> <span id="min_cp">100</span>-<span id="max_cp">118</span></h3>
+  <h4 id="cp_rank_label">(Ranked <span id="cp_rank">140</span> at <span id="cp_norm"></span>%)</h4>
+
+	<div id="arc_section">
+
+	    <div class="pkm pkm001" id="pokemon_image"></div>
+	    <h3 id="pokemon_name">Bulbasaur</h3>
+	  	<h3 id="hp_label"><small>HP</small> <span id="min_hp">30</span>-<span id="max_hp">38</span></h3>
+	  	<h4 id="hp_rank_label">(Ranked <span id="hp_rank">140</span> at <span id="hp_norm"></span>%)</h4>
+	  	<h4>Click/tap the image or move the slider to change Pokemon</h4>
+
+	    <div id="svg_cont"><svg xmlns="http://www.w3.org/2000/svg" id="arc"></svg></div>
+	</div>
+
+<div id="white_part">
+
+<h3>Trainer Level: <span id="trainer_level_label">5</span><small class="float_right basic">wild pokemon are &le; trainer's level</small><div class="float_right advanced">Total XP: <span id="exp_req_label">10000</span></div></h3>
+<input type="range" min="1" max="40" value="5" id="trainer_level">
+<h3>Arc Position<small class="float_right basic">Estimated Pokemon Level: <span id="pokemon_level_label">5</span></small><small class="float_right advanced"><abbr title="Effective Compact Power Mutliplier
+(used for CP, HP, damage calculations)">ECpM</abbr>: <span id="pokemon_ecpm_label">0.2902499</span></small></h3>
+<input type="range" min="1" max="6.5" value="5" step="0.5" id="pokemon_level">
+
+
+<div class="table" id="power_up">
+	<div>
+		<div id="power_up_label">
+			Needed for Power Up<br/>
+			<small>(increases 0.5 levels)</small>
+		</div>
+		<div id="stardust_label">
+			<span id="stardust">600</span><br />
+			Stardust
+		</div>
+		<div id="candy_label">
+			<div id="candy_base"><div id="candy_secondary"></div><div id="candy_highlight"></div></div>
+			<span id="candy">1</span><br />
+			Candy
+		</div>
+	</div>
+</div>
+
+<h3>Pokemon CP: <span id="pokemon_cp_label">5</span><small class="float_right basic"><span id="user_min_cp">100</span> - <span id="user_max_cp">118</span> for this level</small></h3>
+<input type="range" min="113" max="144" value="138" id="pokemon_cp">
+
+<h3>Pokemon HP: <span id="pokemon_hp_label">5</span><small class="float_right basic"><span id="user_min_hp">100</span> - <span id="user_max_hp">118</span> for this level</small></h3>
+<input type="range" min="26" max="30" value="28" id="pokemon_hp">
+
+<div id="cp_results_cont"><svg xmlns="http://www.w3.org/2000/svg" id="cp_results"></svg></div>
+
+</div>
+</div>
+<div class="lower_right">
+
+
+
+
+
+
+
+
+<div class="table stats advanced">
+	<div>
+		<div id="types_label">
+			<span id="types"></span><br />
+			Type
+		</div>
+	</div>
+</div>
+
+<div class="table" id="moves_match_up">
+	<div>
+		<div class="match_up_header">Best Moves</div>
+		<div class="match_up_header">Best Moves Against</div>
+	</div>
+	<div>
+		<div id="moves_best">
+			
+		</div>
+		<div id="moves_best_against">
+			
+		</div>
+	</div>
+</div>
+
+
+<div class="table" id="type_match_up">
+	<div>
+		<div class="match_up_header">Types Good Against</div>
+		<div class="match_up_header">Types Bad Against</div>
+	</div>
+	<div>
+		<div id="type_good_against">
+			
+		</div>
+		<div id="type_bad_against">
+			
+		</div>
+	</div>
+</div>
+
+
+<div class="table" id="pokemon_match_up">
+	<div>
+		<div class="match_up_header">Pokemon Good Against</div>
+		<div class="match_up_header">Pokemon Worst Against</div>
+	</div>
+	<div>
+		<div id="pokemon_good_against">
+			
+		</div>
+		<div id="pokemon_worst_against">
+			
+		</div>
+	</div>
+</div>
+
+
+
+</div>
+
+
+<div id="pokemon_selector"></div>
+
+
+        <script src="https://poke.isitin.org/js/data.js"></script>
+        <script src="js/index.js"></script>
+
+    
+    </div>
+  </body>
+</html>

@@ -454,10 +454,9 @@ transition: background 0.5s linear;
 }
 
 .move .power {
-  display: none;
   position: absolute;
-  right: 90px;
-  font-size: inherit!important;
+  right: 70px;
+  font-size: smaller;
   color: inherit!important;
   font-weight: bold;
 }

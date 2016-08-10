@@ -739,37 +739,95 @@ types_text_lookup = {
 var img = new Image();
 img.src = 'img/pkm_full.png';
 
-function bestGuess() {
-  var stamina;
-  for (stamina = 0; stamina < 16; stamina++) {
-    if (Math.floor((pokemon[pk_id].BaseStamina + stamina) * CpM[pokemon_level*2-2]) == user_hp) {
-      break;
-    }
-  }
-  possible_attacks = [];
-  possible_defenses = [];
-  for (var attack = 0; attack < 16; attack++) {
-    for (var defense = 0; defense < 16; defense++) {
-      if (Math.max(Math.floor((pokemon[pk_id].BaseAttack + attack)*Math.sqrt(pokemon[pk_id].BaseDefense + defense)*Math.sqrt(pokemon[pk_id].BaseStamina + stamina)*Math.pow(CpM[pokemon_level*2-2],2)/10), 10) == user_cp) {
-        possible_attacks.push(attack);
-        possible_defenses.push(defense);
-      }
-    }
-  }
-}
+var defender = false;
+var elt = document.getElementById("defender");
+elt.addEventListener("change", function(e) {defender = elt.checked;updatePokemon();} );
 
 function updatePokemon() {
-  good_against = {}
+  quick_moves = [];
+  for (var i = 0; i < pokemon[pk_id].QuickMoves.length; i++) {
+    quick_moves[quick_moves.length] = moves[pokemon[pk_id].QuickMoves[i]];
+  }
+  cinematic_moves = [];
+  for (var i = 0; i < pokemon[pk_id].CinematicMoves.length; i++) {
+    cinematic_moves[cinematic_moves.length] = moves[pokemon[pk_id].CinematicMoves[i]];
+  }
+
+  function defense_DPS(move) {
+    var base = 1000.0*move.power/move.duration;
+    if (move.critical)
+      base = base*(1+move.critical);
+    return base;
+  }
+
+  function attack_DPS(move) {
+    var base = defender ? 1000.0*move.power/(move.duration+1500) : 1000.0*move.power/move.duration;
+    if (move.critical)
+      base = base*(1+move.critical);
+    if (move.type == pokemon[pk_id].Type1 || move.type == pokemon[pk_id].Type2)
+      return base*1.25;
+    return base;
+  }
+
+  function compare_moves(a,b) {
+    if (attack_DPS(a) > attack_DPS(b))
+      return -1;
+    if (attack_DPS(a) < attack_DPS(b))
+      return 1;
+    return 0;
+  }
+
+  all_moves = quick_moves.concat(cinematic_moves);
+  quick_moves.sort(compare_moves);
+  cinematic_moves.sort(compare_moves);
+  all_moves.sort(compare_moves);
+
+  function refreshType() {
+    good_against = {}
+    var type1 = pokemon[pk_id].Type1;
+    for (var i in quick_moves)
+      if (quick_moves[i].Checked) type1 = quick_moves[i].type;
+    var type2 = pokemon[pk_id].Type2;
+    for (var i in cinematic_moves)
+      if (cinematic_moves[i].Checked) type2 = cinematic_moves[i].type;
+    attack_array1 = attack_matrix[types_lookup[type1]];
+    if (type2 == "None") {
+      for (var i = 0; i < attack_array1.length; i++) {
+        if (attack_array1[i] > 1) {
+          good_against[types_dict[i]] = attack_array1[i].toPrecision(3);
+        }
+      }
+    } else {
+      attack_array2 = attack_matrix[types_lookup[type2]];
+      for (var i = 0; i < attack_array1.length; i++) {
+        if (attack_array1[i] > 1 || attack_array2[i] > 1) {
+          good_against[types_dict[i]] = attack_array1[i].toPrecision(3) + " / " + attack_array2[i].toPrecision(3);
+        }
+      }
+    }
+
+    var type_good_against_label = document.getElementById("type_good_against");
+    while (type_good_against_label.firstChild) {
+        type_good_against_label.removeChild(type_good_against_label.firstChild);
+    }
+    for (var type in good_against) {
+      var type_label = document.createElement("div");
+      type_label.className = "type_comp " + type;
+      type_label.innerHTML = type + " <span>x" + good_against[type] + "</span>";
+      type_good_against_label.appendChild(type_label);
+    }
+
+  }
+
+  refreshType();
+
   bad_against = {}
   resistance = {}
-  attack_array1 = attack_matrix[types_lookup[pokemon[pk_id].Type1]];
+
   defense_array1 = defense_matrix[types_lookup[pokemon[pk_id].Type1]];
 
   if (pokemon[pk_id].Type2 == "None") {
     for (var i = 0; i < attack_array1.length; i++) {
-      if (attack_array1[i] > 1) {
-        good_against[types_dict[i]] = attack_array1[i];
-      }
       if (defense_array1[i] > 1) {
         bad_against[types_dict[i]] = defense_array1[i];
       }
@@ -778,12 +836,8 @@ function updatePokemon() {
       }
     }
   } else {
-    attack_array2 = attack_matrix[types_lookup[pokemon[pk_id].Type2]];
     defense_array2 = defense_matrix[types_lookup[pokemon[pk_id].Type2]];
     for (var i = 0; i < attack_array1.length; i++) {
-      if (attack_array1[i] > 1 || attack_array2[i] > 1) {
-        good_against[types_dict[i]] = Math.max(attack_array1[i], attack_array2[i]);
-      }
       if (defense_array1[i] * defense_array2[i] > 1) {
         bad_against[types_dict[i]] = defense_array1[i] * defense_array2[i];
       }
@@ -793,27 +847,10 @@ function updatePokemon() {
     }
   }
 
-  quick_moves = [];
-  for (var i = 0; i < pokemon[pk_id].QuickMoves.length; i++) {
-    var temp_move = JSON.parse(JSON.stringify(moves[pokemon[pk_id].QuickMoves[i]]));
-    if (temp_move.Type == pokemon[pk_id].Type1 || temp_move.Type == pokemon[pk_id].Type2)
-      temp_move.DPS *= 1.25;
-    temp_move.Id = pokemon[pk_id].QuickMoves[i];
-    quick_moves[quick_moves.length] = temp_move;
-  }
-  cinematic_moves = [];
-  for (var i = 0; i < pokemon[pk_id].CinematicMoves.length; i++) {
-    var temp_move = JSON.parse(JSON.stringify(moves[pokemon[pk_id].CinematicMoves[i]]));
-    if (temp_move.Type == pokemon[pk_id].Type1 || temp_move.Type == pokemon[pk_id].Type2)
-      temp_move.DPS *= 1.25;
-    temp_move.Id = pokemon[pk_id].CinematicMoves[i];
-    cinematic_moves[cinematic_moves.length] = temp_move;
-  }
-
   moves_bad_against = [];
   for (var type in bad_against) {
     for(var i in moves) {
-      if (moves[i].Type == type) {
+      if (moves[i].type == type) {
         temp_move = JSON.parse(JSON.stringify(moves[i]));
         temp_move.DPS *= bad_against[type];
         moves_bad_against[moves_bad_against.length] = temp_move;
@@ -821,34 +858,13 @@ function updatePokemon() {
     }
   }
 
-  function compare_moves(a,b) {
-    if (a.DPS > b.DPS)
-      return -1;
-    if (a.DPS < b.DPS)
-      return 1;
-    return 0;
-  }
-
   moves_bad_against.sort(compare_moves);
-  all_moves = quick_moves.concat(cinematic_moves);
-  quick_moves.sort(compare_moves);
-  cinematic_moves.sort(compare_moves);
-  all_moves.sort(compare_moves);
 
-  var type_good_against_label = document.getElementById("type_good_against");
-  while (type_good_against_label.firstChild) {
-      type_good_against_label.removeChild(type_good_against_label.firstChild);
-  }
   var type_bad_against_label = document.getElementById("type_bad_against");
   while (type_bad_against_label.firstChild) {
       type_bad_against_label.removeChild(type_bad_against_label.firstChild);
   }
-  for (var type in good_against) {
-    var type_label = document.createElement("div");
-    type_label.className = "type_comp " + type;
-    type_label.innerHTML = type + " <span>x" + good_against[type].toPrecision(3) + "</span>";
-    type_good_against_label.appendChild(type_label);
-  }
+
   for (var type in bad_against) {
     var type_label = document.createElement("div");
     type_label.className = "type_comp " + type;
@@ -874,15 +890,33 @@ function updatePokemon() {
   //   move_label.innerHTML = cinematic_moves[i].Name + "<span class='power'>" + cinematic_moves[i].Power + "</span><span class='DPS'>" + cinematic_moves[i].DPS.toPrecision(3) + " DPS</span>";
   //   moves_best_label.appendChild(move_label);
   // }
+
+  function switchMove(i) {
+    return function(e) {
+      all_moves[i].Checked = !all_moves[i].Checked;
+      var user_moves = document.getElementsByClassName('move-check');
+      if (all_moves[i].Checked)
+        [].forEach.call(user_moves, function (e) {
+        var j = parseInt(e.id)
+        if (i != j && all_moves[i].speed == all_moves[j].speed && all_moves[j].Checked) {
+          e.checked = false;
+          all_moves[j].Checked = false;
+        }
+      });
+      refreshType();
+    }
+  }
+
+
   for (var i in all_moves) {
     var move_label = document.createElement("div");
-    move_label.className = "move " + all_moves[i].Type;
+    move_label.className = "move " + all_moves[i].type;
     var fast = "";
-    if (all_moves[i].Speed == "Fast")
-      fast = " (fast)";
-    move_label.innerHTML = "<input type='checkbox' id='"+all_moves[i].Id+"-move' class='move-check' /> " + all_moves[i].Name + fast + "<span class='power'>" + all_moves[i].Power + "</span><span class='DPS'>" + all_moves[i].DPS.toPrecision(3) + makeFraction("PWR", "SEC", "Power per Second") + "</span>";
+    if (all_moves[i].speed != "Fast")
+      fast = "*";
+    move_label.innerHTML = "<input type='checkbox' id='"+i+"-move' class='move-check' /> " + fast + all_moves[i].name + "<span class='power'>" + all_moves[i].power + "@" + all_moves[i].duration + "</span><span class='DPS'>" + Math.round(attack_DPS(all_moves[i])*(pokemon[pk_id].BaseAttack + 7.5)) + makeFraction("PWR", "SEC", "Power per Second") + "</span>";
     moves_best_label.appendChild(move_label);
-    document.getElementById(all_moves[i].Id+"-move").addEventListener("change", drawImage);
+    document.getElementById(i+"-move").addEventListener("change", switchMove(i));
   } 
 
   var moves_best_against_label = document.getElementById("moves_best_against");
@@ -891,66 +925,9 @@ function updatePokemon() {
   }
   for (var i = 0; i < all_moves.length; i++) {
     var move_label = document.createElement("div");
-    move_label.className = "move " + moves_bad_against[i].Type;
-    move_label.innerHTML = moves_bad_against[i].Name + "<span class='power'>" + moves_bad_against[i].Power + "</span><span class='DPS'>" + moves_bad_against[i].DPS.toPrecision(3) + makeFraction("PWR", "SEC", "Power per Second") + "</span>";
+    move_label.className = "move " + moves_bad_against[i].type;
+    move_label.innerHTML = moves_bad_against[i].name + "<span class='power'>" + moves_bad_against[i].power + "@" + moves_bad_against[i].duration + "</span><span class='DPS'>" + defense_DPS(moves_bad_against[i]).toPrecision(3) + makeFraction("PWR", "SEC", "Power per Second") + "</span>";
     moves_best_against_label.appendChild(move_label);
-  }
-
-  var pokemon_good_against_label = document.getElementById("pokemon_good_against");
-  while (pokemon_good_against_label.firstChild) {
-      pokemon_good_against_label.removeChild(pokemon_good_against_label.firstChild);
-  }
-  var pokemon_worst_against_label = document.getElementById("pokemon_worst_against");
-  while (pokemon_worst_against_label.firstChild) {
-      pokemon_worst_against_label.removeChild(pokemon_worst_against_label.firstChild);
-  }
-  // for (var i = 1; i < pokemon.length; i++) {
-  //   for (var type in good_against) {
-  //     if (pokemon[i].Type1 == type || pokemon[i].Type2 == type) {
-  //       pokemon_good_against[pokemon_good_against.length] = pokemon[i];
-  //     }
-  //   }
-  // }
-
-  best_move_dps = 0;
-  for (var i in pokemon_x_moves) {
-    if (pokemon_x_moves[i].Id == pk_id) {
-      best_move_dps = Math.max(pokemon_x_moves[i].DPS, best_move_dps);
-    }
-  }
-
-  var pokemon_good_against = [];
-  var pokemon_worst_against = [];
-  for (var i in pokemon_x_moves) {
-    if (pokemon[pk_id].Type1 == "Normal" && pokemon[pk_id].Type2 == "None" && best_move_dps > pokemon_x_moves[i].DPS) {
-        pokemon_good_against[pokemon_good_against.length] = pokemon_x_moves[i];
-    } else {
-      for (var type in good_against) {
-        if ((pokemon_x_moves[i].Type1 == type || pokemon_x_moves[i].Type2 == type) && best_move_dps > pokemon_x_moves[i].DPS) {
-          pokemon_good_against[pokemon_good_against.length] = pokemon_x_moves[i];
-        }
-      }
-    }
-    for (var type in bad_against) {
-      if (pokemon_x_moves[i].Move.Type == type) {
-        pkmv = JSON.parse(JSON.stringify(pokemon_x_moves[i]));
-        pkmv.DPS *= bad_against[type];
-        pokemon_worst_against[pokemon_worst_against.length] = pkmv;
-      }
-    }
-  }
-
-  for (var i = 0; i < Math.min(10, pokemon_good_against.length); i++) {
-    var mon = document.createElement("div");
-    mon.className = "move " + pokemon_good_against[i].Move.Type;
-    mon.innerHTML = pokemon_good_against[i].Name + " with " + pokemon_good_against[i].Move.Name + "<span class='DPS'>" + parseInt(pokemon_good_against[i].DPS) + makeFraction("AP", "SEC", "Attack-Power per Second") +"</span>";
-    pokemon_good_against_label.appendChild(mon);
-  }
-  for (var i = 0; i < Math.min(10, pokemon_worst_against.length); i++) {
-    var mon = document.createElement("div");
-    mon.className = "move " + pokemon_worst_against[i].Move.Type;
-    mon.innerHTML = pokemon_worst_against[i].Name + " with " + pokemon_worst_against[i].Move.Name + "<span class='DPS'>" + parseInt(pokemon_worst_against[i].DPS) + makeFraction("AP", "SEC", "Attack-Power per Second") +"</span>";
-    pokemon_worst_against_label.appendChild(mon);
   }
 
 

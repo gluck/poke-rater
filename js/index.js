@@ -847,18 +847,6 @@ function updatePokemon() {
     }
   }
 
-  moves_bad_against = [];
-  for (var type in bad_against) {
-    for(var i in moves) {
-      if (moves[i].type == type) {
-        temp_move = JSON.parse(JSON.stringify(moves[i]));
-        temp_move.DPS *= bad_against[type];
-        moves_bad_against[moves_bad_against.length] = temp_move;
-      }
-    }
-  }
-
-  moves_bad_against.sort(compare_moves);
 
   var type_bad_against_label = document.getElementById("type_bad_against");
   while (type_bad_against_label.firstChild) {
@@ -877,19 +865,6 @@ function updatePokemon() {
       moves_best_label.removeChild(moves_best_label.firstChild);
   }
 
-  // for (var i in quick_moves) {
-  //   var move_label = document.createElement("div");
-  //   move_label.className = "move " + quick_moves[i].Type;
-  //   move_label.innerHTML = quick_moves[i].Name + "<span class='power'>" + quick_moves[i].Power + "</span><span class='DPS'>" + quick_moves[i].DPS.toPrecision(3) + " DPS</span>";
-  //   moves_best_label.appendChild(move_label);
-  // }  
-  // moves_best_label.appendChild(document.createElement("hr"));
-  // for (var i in cinematic_moves) {
-  //   var move_label = document.createElement("div");
-  //   move_label.className = "move " + cinematic_moves[i].Type;
-  //   move_label.innerHTML = cinematic_moves[i].Name + "<span class='power'>" + cinematic_moves[i].Power + "</span><span class='DPS'>" + cinematic_moves[i].DPS.toPrecision(3) + " DPS</span>";
-  //   moves_best_label.appendChild(move_label);
-  // }
 
   function switchMove(i) {
     return function(e) {
@@ -918,17 +893,6 @@ function updatePokemon() {
     moves_best_label.appendChild(move_label);
     document.getElementById(i+"-move").addEventListener("change", switchMove(i));
   } 
-
-  var moves_best_against_label = document.getElementById("moves_best_against");
-  while (moves_best_against_label.firstChild) {
-      moves_best_against_label.removeChild(moves_best_against_label.firstChild);
-  }
-  for (var i = 0; i < all_moves.length; i++) {
-    var move_label = document.createElement("div");
-    move_label.className = "move " + moves_bad_against[i].type;
-    move_label.innerHTML = moves_bad_against[i].name + "<span class='power'>" + moves_bad_against[i].power + "@" + moves_bad_against[i].duration + "</span><span class='DPS'>" + defense_DPS(moves_bad_against[i]).toPrecision(3) + makeFraction("PWR", "SEC", "Power per Second") + "</span>";
-    moves_best_against_label.appendChild(move_label);
-  }
 
 
 }

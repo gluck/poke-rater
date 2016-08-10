@@ -455,7 +455,7 @@ transition: background 0.5s linear;
 
 .move .power {
   position: absolute;
-  right: 70px;
+  right: 80px;
   font-size: smaller;
   color: inherit!important;
   font-weight: bold;

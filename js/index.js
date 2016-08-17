@@ -436,9 +436,9 @@ function drawImage() {
   min_br_cp = Math.max(Math.max(Math.floor(pokemon[pk_id].BaseAttack * Math.sqrt(pokemon[pk_id].BaseDefense) * Math.sqrt(min_est_total_stamina) * Math.pow(CpM[pokemon_level*2-2], 2) / 10), 10), min_cp);
   max_br_cp = Math.min(Math.max(Math.floor((pokemon[pk_id].BaseAttack + 15) * Math.sqrt(pokemon[pk_id].BaseDefense + 15) * Math.sqrt(max_est_total_stamina) * Math.pow(CpM[pokemon_level*2-2], 2) / 10), 10), max_cp);
   
-  per_diff_cp = (-1 + (user_cp+0.5) / ((pokemon[pk_id].BaseAttack + 7.5) * Math.sqrt(pokemon[pk_id].BaseDefense + 7.5) * Math.sqrt(pokemon[pk_id].BaseStamina + 7.5) * Math.pow(CpM[pokemon_level*2-2], 2) / 10)) * 100;
-  per_diff_sta = (-1 + (user_hp+0.5) / ((pokemon[pk_id].BaseStamina + 7.5) * CpM[pokemon_level*2-2])) * 100;
-  per_diff_br = (-1 + (user_cp+0.5) / ((pokemon[pk_id].BaseAttack + 7.5) * Math.sqrt(pokemon[pk_id].BaseDefense + 7.5) * Math.sqrt(est_total_stamina) * Math.pow(CpM[pokemon_level*2-2], 2) / 10)) * 100;
+  per_diff_cp = (-1 + (user_cp+0.5) / ((pokemon[pk_id].BaseAttack + 15) * Math.sqrt(pokemon[pk_id].BaseDefense + 15) * Math.sqrt(pokemon[pk_id].BaseStamina + 15) * Math.pow(CpM[pokemon_level*2-2], 2) / 10)) * 100;
+  per_diff_sta = (-1 + (user_hp+0.5) / ((pokemon[pk_id].BaseStamina + 15) * CpM[pokemon_level*2-2])) * 100;
+  per_diff_br = (-1 + (user_cp+0.5) / ((pokemon[pk_id].BaseAttack + 15) * Math.sqrt(pokemon[pk_id].BaseDefense + 15) * Math.sqrt(est_total_stamina) * Math.pow(CpM[pokemon_level*2-2], 2) / 10)) * 100;
   
   rating_cp = (user_cp - min_cp) / (max_cp - min_cp) * 100;
   rating_sta = (user_hp - min_hp) / (max_hp - min_hp) * 100;
@@ -889,7 +889,7 @@ function updatePokemon() {
     var fast = "";
     if (all_moves[i].speed != "Fast")
       fast = "*";
-    move_label.innerHTML = "<input type='checkbox' id='"+i+"-move' class='move-check' /> " + fast + all_moves[i].name + "<span class='power'>" + all_moves[i].power + "@" + all_moves[i].duration + "</span><span class='DPS'>" + Math.round(attack_DPS(all_moves[i])*(pokemon[pk_id].BaseAttack + 7.5)) + makeFraction("PWR", "SEC", "Power per Second") + "</span>";
+    move_label.innerHTML = "<input type='checkbox' id='"+i+"-move' class='move-check' /> " + fast + all_moves[i].name + "<span class='power'>" + all_moves[i].power + "@" + all_moves[i].duration + "</span><span class='DPS'>" + Math.round(attack_DPS(all_moves[i])*(pokemon[pk_id].BaseAttack + 15)) + makeFraction("PWR", "SEC", "Power per Second") + "</span>";
     moves_best_label.appendChild(move_label);
     document.getElementById(i+"-move").addEventListener("change", switchMove(i));
   } 
@@ -938,7 +938,7 @@ for (var i = 1; i < pokemon.length; i++) {
   for (var move_id in pokemon[i].QuickMoves) {
     var pk = JSON.parse(JSON.stringify(pokemon[i]));
     pk.Move = JSON.parse(JSON.stringify(moves[pk.QuickMoves[move_id]]));
-    pk.DPS = pk.Move.DPS * (pk.BaseAttack + 7.5);
+    pk.DPS = pk.Move.DPS * (pk.BaseAttack + 15);
     if (pk.Move.Type == pk.Type1 || pk.Move.Type == pk.Type2)
       pk.DPS *= 1.25;
     pokemon_x_moves[pokemon_x_moves.length] = pk;
@@ -946,7 +946,7 @@ for (var i = 1; i < pokemon.length; i++) {
   for (var move_id in pokemon[i].CinematicMoves) {
     var pk = JSON.parse(JSON.stringify(pokemon[i]));
     pk.Move = JSON.parse(JSON.stringify(moves[pk.CinematicMoves[move_id]]));
-    pk.DPS = pk.Move.DPS * (pk.BaseAttack + 7.5);
+    pk.DPS = pk.Move.DPS * (pk.BaseAttack + 15);
     if (pk.Move.Type == pk.Type1 || pk.Move.Type == pk.Type2)
       pk.DPS *= 1.25;
     pokemon_x_moves[pokemon_x_moves.length] = pk;
